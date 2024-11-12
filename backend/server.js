@@ -10,6 +10,7 @@ const pool = require('./config/db'); // Configuración de la base de datos
 const authRoutes = require('./routes/authRoutes'); // Rutas de autenticación
 const reservaRoutes = require('./routes/reservaRoutes'); // Rutas para reservas
 const camRoutes = require('./routes/camRoutes'); // Rutas para mensajes de contacto
+const clienteRoutes = require('./routes/clienteRoutes');
 const verifyToken = require('./middleware/verifyToken'); // Middleware de autenticación
 
 const app = express();
@@ -26,6 +27,7 @@ app.use(cors({
 app.use(bodyParser.json());
 
 // Rutas de la API
+app.use('/api', clienteRoutes);
 app.use('/api/auth', authRoutes); // Rutas de autenticación
 app.use('/api/reservas', verifyToken, reservaRoutes); // Rutas protegidas para reservas
 app.use('/api/cam', camRoutes); // Rutas para mensajes de contacto
@@ -34,7 +36,7 @@ app.use('/api/cam', camRoutes); // Rutas para mensajes de contacto
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.resolve(__dirname, '../frontend/dist')));
 
-    app.get('*', (req, res) => {
+    app.get('/', (req, res) => {
         res.sendFile(path.resolve(__dirname, '../frontend/dist', 'index.html'));
     });
 }

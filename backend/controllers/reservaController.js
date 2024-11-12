@@ -1,10 +1,24 @@
 const pool = require('../config/db');  // Conexión a la base de datos
+const mysql = require('mysql2'); // Si no tienes esta dependencia, debes instalarla
 
-// Obtener todos los clientes
+// Función para convertir el BLOB de la imagen a base64
+const convertBlobToBase64 = (blob) => {
+    return blob.toString('base64');
+};
+
+// Obtener todos los clientes con su imagen
 exports.getClientes = async (req, res) => {
     try {
         const [results] = await pool.query('SELECT * FROM clientes');
-        res.status(200).json(results); // Enviar lista de clientes con código 200 (OK)
+        // Convertir las imágenes BLOB a base64 antes de enviar la respuesta
+        const clientes = results.map(cliente => {
+            if (cliente.imagen) {
+                cliente.imagen = convertBlobToBase64(cliente.imagen);
+            }
+            return cliente;
+        });
+
+        res.status(200).json(clientes); // Enviar lista de clientes con imagen en base64
     } catch (err) {
         console.error('Error al obtener los clientes:', err); // Registro del error en consola
         res.status(500).json({ message: 'Error al obtener los clientes', error: err.message });

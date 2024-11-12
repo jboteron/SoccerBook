@@ -186,61 +186,6 @@ body {
   animation: fadeIn 1s ease-in-out; /* Animación de desvanecimiento al cargar la página */
 }
 
-/* Estilos de navegación */
-nav {
-  padding: 1em;
-  background-color: var(--color-primario); /* Color de fondo de la barra de navegación */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra en la barra de navegación */
-}
-
-nav ul {
-  list-style-type: none; /* Sin lista de puntos */
-  padding: 0; /* Sin padding */
-  margin: 0; /* Sin margin */
-  display: flex; /* Usar flexbox para la navegación */
-  justify-content: center; /* Centrar elementos */
-}
-
-nav ul li {
-  margin: 0 15px; /* Espaciado entre elementos */
-}
-
-nav ul li a {
-  color: var(--color-blanco); /* Color del texto */
-  text-decoration: none; /* Sin subrayado */
-  transition: color 0.3s ease; /* Transición de color */
-}
-
-nav ul li a:hover {
-  text-decoration: underline; /* Subrayar al pasar el cursor */
-}
-
-/* Botones de navegación */
-.nav-button {
-  background-color: var(--color-secundario); /* Naranja para botones de navegación */
-  color: var(--color-blanco);
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.nav-button:hover {
-  background-color: #d35400; /* Naranja más oscuro en hover */
-}
-
-/* Estilos de enlaces */
-a {
-  color: var(--color-primario); /* Color de enlaces */
-  text-decoration: none; /* Sin subrayado */
-}
-
-a:hover {
-  text-decoration: underline; /* Subrayar al pasar el cursor */
-}
-
 /* Estilos de contenedores */
 .container {
   max-width: 1200px; /* Ancho máximo */

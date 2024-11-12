@@ -3,9 +3,11 @@
     <div class="footer-content">
       <p>&copy; 2024 Reservas de Canchas. Todos los derechos reservados.</p>
       <ul class="footer-links">
-        <li><a href="/reservas">Reservar</a></li>
-        <li><a href="/contacto">Contacto</a></li>
-        <li><a href="/sobre-nosotros">Sobre Nosotros</a></li>
+        <!-- Manejo de la autenticación para redirigir a la reserva o al login -->
+        <li><a @click.prevent="handleReservation" class="btn">Reserva</a></li>
+        <!-- Las demás rutas se verifican con handleRedirect -->
+        <li><a @click.prevent="handleRedirect('/contacto')">Contacto</a></li>
+        <li><a @click.prevent="handleRedirect('/sobre-nosotros')">Sobre Nosotros</a></li>
       </ul>
       <ul class="social-media">
         <li><a href="https://facebook.com" target="_blank" aria-label="Facebook">
@@ -28,15 +30,30 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   name: 'FooterSection',
+  computed: {
+    ...mapGetters(['isLoggedIn']) // Verificar si el usuario está autenticado
+  },
   methods: {
+    handleReservation() {
+      // Redirige a "reservar" si está autenticado, o al "login" si no lo está
+      this.isLoggedIn ? this.$router.push('/reservar') : this.$router.push('/login');
+    },
+    handleRedirect(route) {
+      // Redirige según el estado de autenticación para cualquier otra ruta
+      this.$router.push(route);
+    },
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 };
 </script>
+
+
 
 
 <style scoped>

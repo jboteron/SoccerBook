@@ -1,8 +1,16 @@
-const pool = require('../config/db'); // Conexión a la base de datos
+const pool = require('../config/db');
+const multer = require('multer');
+
+// Configuración de almacenamiento en memoria con multer
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+exports.upload = upload;
 
 // Crear nuevo cliente
 exports.crearCliente = async (req, res) => {
-  const { nombre, direccion, imagen, telefono, correo } = req.body;
+  const { nombre, direccion, telefono, correo } = req.body;
+  const imagen = req.file ? req.file.buffer : null;
 
   try {
     const [result] = await pool.query(

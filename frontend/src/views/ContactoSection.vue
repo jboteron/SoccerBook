@@ -1,12 +1,12 @@
 <template>
   <section id="contacto" class="contact-container">
-    <h2>Contacto</h2>
-    <p>
+    <h2 class="contact-title">Contacto</h2>
+    <p class="contact-text">
       Si tienes alguna pregunta, no dudes en 
       <a href="mailto:info@reservas.com" class="contact-link">contactarnos</a>.
     </p>
     <div class="contact-info">
-      <h3>Información de Contacto</h3>
+      <h3 class="contact-subtitle">Información de Contacto</h3>
       <p><strong>Email:</strong> <a href="mailto:info@reservas.com">info@reservas.com</a></p>
       <p><strong>Teléfono:</strong> +57 3204401062</p>
       <p><strong>Dirección:</strong> Calle Ficticia 123, Ciudad, País</p>
@@ -18,26 +18,26 @@
 
     <form v-if="showForm" @submit.prevent="sendMessage" class="contact-form">
       <div v-if="!user" class="form-group">
-        <label for="name">Nombre:</label>
-        <input id="name" type="text" v-model="name" required placeholder="Tu nombre" />
+        <label for="name" class="form-label">Nombre:</label>
+        <input id="name" type="text" v-model="name" required placeholder="Tu nombre" class="form-input" />
       </div>
       <div v-if="!user" class="form-group">
-        <label for="email">Correo:</label>
-        <input id="email" type="email" v-model="email" required placeholder="Tu correo" />
+        <label for="email" class="form-label">Correo:</label>
+        <input id="email" type="email" v-model="email" required placeholder="Tu correo" class="form-input" />
       </div>
       <div v-if="user" class="form-group">
-        <label for="name">Nombre:</label>
-        <input id="name" type="text" v-model="user.nombre" readonly />
+        <label for="name" class="form-label">Nombre:</label>
+        <input id="name" type="text" v-model="user.nombre" readonly class="form-input" />
       </div>
       <div v-if="user" class="form-group">
-        <label for="email">Correo:</label>
-        <input id="email" type="email" v-model="user.correo" readonly />
+        <label for="email" class="form-label">Correo:</label>
+        <input id="email" type="email" v-model="user.correo" readonly class="form-input" />
       </div>
       <div class="form-group">
-        <label for="message">Mensaje:</label>
-        <textarea id="message" v-model="message" required placeholder="Tu mensaje" rows="4"></textarea>
+        <label for="message" class="form-label">Mensaje:</label>
+        <textarea id="message" v-model="message" required placeholder="Tu mensaje" rows="4" class="form-input"></textarea>
       </div>
-      <button type="submit">Enviar Mensaje</button>
+      <button type="submit" class="submit-button">Enviar Mensaje</button>
     </form>
     
     <p v-if="error" class="error-message">{{ error }}</p>
@@ -115,8 +115,10 @@ export default {
 
         if (response.data.success) {
           this.success = response.data.success;
-          this.name = '';
-          this.email = '';
+          if (!this.user) {
+            this.name = '';
+            this.email = '';
+          }
           this.message = '';
         }
       } catch (error) {
@@ -132,129 +134,136 @@ export default {
 </script>
 
 
+
 <style scoped>
 .contact-container {
-  max-width: 600px; 
-  margin: 50px auto; 
+  max-width: 600px;
+  margin: 50px auto;
   padding: 30px;
+  background: linear-gradient(to right, #42b983, #3d668f);
   border-radius: 12px;
-  background-color: var(--color-blanco);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
+  transition: transform 0.3s ease-in-out;
 }
 
 .contact-container:hover {
   transform: translateY(-5px);
 }
 
-h2 {
-  color: var(--color-primario); 
-  font-size: 30px; 
+.contact-title {
+  color: var(--color-primario);
+  font-size: 30px;
   margin-bottom: 20px;
   font-family: 'Montserrat', sans-serif;
   text-align: center;
 }
 
-p {
-  color: #555; 
-  line-height: 1.8; 
+.contact-text {
+  color: #555;
+  line-height: 1.8;
 }
 
 .contact-link {
-  color: var(--color-secundario); 
-  text-decoration: none; 
+  color: var(--color-secundario);
+  text-decoration: none;
   font-weight: bold;
+  transition: color 0.3s ease;
 }
 
 .contact-link:hover {
-  text-decoration: underline; 
+  color: var(--color-terciario);
 }
 
 .contact-info {
-  margin-top: 25px; 
+  margin-top: 25px;
   padding: 20px;
-  background-color: #f9f9f9; 
-  border-radius: 8px; 
+  background-color: #f9f9f9;
+  border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-.contact-info h3 {
-  color: var(--color-terciario); 
+.contact-subtitle {
+  color: var(--color-terciario);
+  margin-bottom: 10px;
+  font-weight: bold;
 }
 
 .form-group {
   margin-bottom: 20px;
 }
 
-label {
-  font-size: 16px; 
+.form-label {
+  font-size: 16px;
   color: var(--color-secundario);
   margin-bottom: 5px;
   display: block;
   font-weight: 600;
 }
 
-input,
-textarea {
+.form-input {
   width: 100%;
-  padding: 12px; 
-  border: 1px solid #ccc; 
-  border-radius: 6px; 
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
   font-size: 16px;
   font-family: 'Montserrat', sans-serif;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-input:focus,
-textarea:focus {
-  border-color: var(--color-secundario); 
-  outline: none; 
+.form-input:focus {
+  border-color: var(--color-secundario);
+  outline: none;
   box-shadow: 0 0 5px rgba(66, 183, 131, 0.5);
 }
 
-button {
-  padding: 15px; 
-  background-color: var(--color-secundario); 
-  color: var(--color-blanco); 
-  border: none; 
-  border-radius: 6px; 
-  cursor: pointer; 
-  font-size: 18px; 
-  font-weight: bold; 
-  transition: background-color 0.3s ease, transform 0.3s ease; 
-}
-
-button:hover {
-  background-color: var(--color-terciario); 
-  transform: scale(1.05); 
-}
-
 .toggle-button {
-  margin: 20px 0; 
-  padding: 10px; 
-  background-color: var(--color-primario); 
-  color: var(--color-blanco); 
-  border: none; 
-  border-radius: 6px; 
-  cursor: pointer; 
-  font-size: 16px; 
-  font-weight: bold; 
-  transition: background-color 0.3s ease, transform 0.3s ease; 
+  margin: 20px 0;
+  padding: 10px;
+  background-color: var(--color-primario);
+  color: var(--color-blanco);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .toggle-button:hover {
   background-color: var(--color-secundario);
+  transform: scale(1.05);
+}
+
+.submit-button {
+  width: 100%;
+  padding: 15px;
+  background-color: var(--color-secundario);
+  color: var(--color-blanco);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: var(--color-terciario);
+  transform: scale(1.05);
+}
+
+.error-message,
+.success-message {
+  margin-top: 15px;
+  font-weight: bold;
 }
 
 .error-message {
-  color: #e74c3c; 
-  margin-top: 15px; 
-  font-weight: bold; 
+  color: #e74c3c;
 }
 
 .success-message {
-  color: #28a745; 
-  margin-top: 15px; 
-  font-weight: bold; 
+  color: #28a745;
 }
+
 </style>

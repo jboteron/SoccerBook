@@ -11,6 +11,9 @@
 
     <!-- Pie de página -->
     <FooterSection />
+
+    <SubirCliente />
+
   </div>
 </template>
 
@@ -18,6 +21,7 @@
 import NavBarComponent from './components/NavBarComponent.vue';
 import FooterSection from './components/FooterSection.vue';
 import UserProfile from './views/UserProfile.vue';
+import SubirCliente from './views/SubirCliente.vue';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
@@ -26,6 +30,7 @@ export default {
     NavBarComponent,
     FooterSection,
     UserProfile,
+    SubirCliente,
   },
   computed: {
     ...mapGetters(['isLoggedIn']), // Verificar si el usuario está autenticado

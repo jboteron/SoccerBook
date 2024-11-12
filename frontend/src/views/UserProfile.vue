@@ -1,19 +1,23 @@
 <template>
-  <div class="perfil-container">
-    <div class="perfil-dropdown">
-      <div class="perfil-circle" @click="toggleDropdown">
-        <img src="https://via.placeholder.com/50" alt="Perfil" />
+  <div class="perfil-container" ref="perfilContainer">
+    <!-- Imagen de perfil, clic para desplegar/ocultar información -->
+    <div class="perfil-circle" @click="toggleDropdown" v-show="!isDropdownOpen">
+      <img src="../assets/a2.jpg" alt="Perfil" />
+    </div>
+
+    <!-- Menú desplegable con la información del perfil -->
+    <div v-if="isDropdownOpen" class="perfil-dropdown-menu">
+      <!-- Imagen dentro del menú desplegable -->
+      <div class="perfil-circle-dropdown">
+        <img src="../assets/a2.jpg" alt="Perfil" />
       </div>
-      <div v-if="isDropdownOpen" class="perfil-dropdown-menu">
-        <div class="perfil-content">
-          <div class="perfil-circle">
-            <img src="https://via.placeholder.com/50" alt="Perfil" />
-          </div>
-          <p><strong>BIENVENIDO</strong> {{ user.nombre }}</p>
-          <p><strong>CORREO</strong> {{ user.correo }}</p>
-          <button class="logout-button" @click="handleLogout">Cerrar Sesión</button>
-        </div>
+
+      <div class="perfil-info">
+        <p><strong>Bienvenido</strong> {{ user.nombre }}</p>
+        <p><strong>Correo</strong> {{ user.correo }}</p>
       </div>
+
+      <button class="logout-button" @click="handleLogout">Cerrar Sesión</button>
     </div>
   </div>
 </template>
@@ -67,9 +71,20 @@ export default {
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen; // Alternar el menú desplegable
     },
+
+    // Cerrar el menú desplegable si se hace clic fuera de él
+    handleClickOutside(event) {
+      if (this.isDropdownOpen && !this.$refs.perfilContainer.contains(event.target)) {
+        this.isDropdownOpen = false;
+      }
+    },
   },
   mounted() {
     this.fetchUser(); // Obtener información del usuario cuando el componente se monta
+    document.addEventListener('click', this.handleClickOutside); // Agregar evento para detectar clic fuera
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside); // Remover evento al desmontar
   },
 };
 </script>
@@ -82,20 +97,17 @@ export default {
   z-index: 100;
 }
 
-.perfil-dropdown {
-  position: relative;
-}
-
-.perfil-circle {
-  width: 50px;
-  height: 50px;
+.perfil-circle, .perfil-circle-dropdown {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.perfil-circle img {
+.perfil-circle img, .perfil-circle-dropdown img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -103,36 +115,36 @@ export default {
 
 .perfil-dropdown-menu {
   position: absolute;
-  top: 60px;
+  top: 100px;
   right: 0;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Centra el contenido verticalmente */
-}
-
-.perfil-content {
+  background: linear-gradient(135deg, #42b983, #3d668f);
+  border-radius: 15px;
+  box-shadow: 0px 6px 25px rgba(0, 0, 0, 0.3);
+  padding: 25px;
+  width: 270px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+.perfil-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: white;
+}
+
 .logout-button {
   background-color: #ff4d4f;
   color: white;
-  padding: 10px 20px;
+  padding: 12px 0;
   border: none;
-  border-radius: 5px;
+  border-radius: 25px;
   cursor: pointer;
-  margin-top: 20px;
   width: 100%;
-}
-
-.logout-button:hover {
-  background-color: #ff7875;
+  font-size: 1.2rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 </style>

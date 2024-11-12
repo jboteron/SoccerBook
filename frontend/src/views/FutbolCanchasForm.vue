@@ -1,59 +1,86 @@
 <template>
   <div>
-    <h1>RESERVA TU CANCHA IDEAL</h1>
+    <h1 class="titulo">RESERVA TU CANCHA IDEAL</h1>
 
-    <!-- Selección de cliente -->
-    <div>
-      <label for="clienteSelect">SELECCIONA UN CLIENTE</label>
-      <select v-model="clienteSeleccionado" @change="getCanchas" id="clienteSelect">
-        <option v-for="cliente in clientes" :key="cliente.id" :value="cliente.id">
-          {{ cliente.nombre }}
-        </option>
-      </select>
+    <!-- Selección de cliente personalizada -->
+    <div class="contenedor">
+      <label for="clienteSelect" class="label">SELECCIONA UN CLIENTE</label>
+      <div class="custom-select">
+        <div 
+          class="selected-client" 
+          @click="toggleClientDropdown" 
+          :title="selectedClient ? selectedClient.nombre : 'Seleccionar Cliente'">
+          <div v-if="selectedClient" class="client-image-container">
+            <img :src="`data:image/jpeg;base64,${selectedClient.imagen}`" alt="Cliente" class="client-image" />
+          </div>
+          <div v-if="selectedClient">
+            <p class="dcliente">{{ selectedClient.nombre }} <br> {{ selectedClient.direccion }}</p>
+          </div>
+          <p v-else>Selecciona un Cliente</p>
+        </div>
+        <ul v-if="isClientDropdownOpen" class="dropdown-list">
+          <li 
+            v-for="cliente in clientes" 
+            :key="cliente.id" 
+            class="dropdown-item" 
+            @click="selectCliente(cliente)">
+            <div class="client-image-container">
+              <img :src="`data:image/jpeg;base64,${cliente.imagen}`" alt="Cliente" class="client-image" />
+            </div>
+            <div>
+              <p>{{ cliente.nombre }} <br> {{ cliente.direccion }}</p>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <!-- Lista de canchas disponibles -->
     <div v-if="clienteSeleccionado">
-      <h2>CANCHAS DISPONIBLES</h2>
-      <ul v-if="canchas.length > 0">
-        <li v-for="cancha in canchas" :key="cancha.id">
-          {{ cancha.nombre }} - {{ cancha.direccion }}
-          <button @click="seleccionarCancha(cancha)">Reservar</button>
+      <h2 class="segundot">CANCHAS DISPONIBLES</h2>
+      <ul v-if="canchas.length > 0" class="lista-canchas">
+        <li v-for="cancha in canchas" :key="cancha.id" class="item-cancha">
+          <span>{{ cancha.nombre }} <br> {{ cancha.direccion }}</span>
+          <button @click="seleccionarCancha(cancha)" class="boton-reservar">Reservar</button>
         </li>
       </ul>
       <p v-else>NO HAY DISPONIBILIDAD</p>
     </div>
 
     <!-- Formulario de reserva -->
-    <div v-if="canchaSeleccionada">
+    <div v-if="canchaSeleccionada" class="formulario-reserva">
       <h3>RESERVAR CANCHA {{ canchaSeleccionada.nombre }}</h3>
       <form @submit.prevent="reservarCancha">
-        <div>
+        <div class="campo-formulario">
           <label for="fecha">FECHA DE LA RESERVA</label>
-          <input type="date" v-model="fecha" id="fecha" required />
+          <input type="date" v-model="fecha" id="fecha" required class="input"/>
         </div>
-
-        <div>
+        <div class="campo-formulario">
           <label for="horaInicio">INGRESO</label>
-          <input type="time" v-model="horaInicio" id="horaInicio" required />
+          <input type="time" v-model="horaInicio" id="horaInicio" required class="input"/>
         </div>
-
-        <div>
+        <div class="campo-formulario">
           <label for="horaFin">SALIDA</label>
-          <input type="time" v-model="horaFin" id="horaFin" required />
+          <input type="time" v-model="horaFin" id="horaFin" required class="input"/>
         </div>
+        <div class="campo-formulario">
+  <label for="nombreCliente">SU NOMBRE</label>
+  <input 
+    type="text" 
+    v-model="nombreCliente" 
+    placeholder="Escribe tu nombre" 
+    id="nombreCliente" 
+    readonly 
+    class="input"
+  />
+</div>
 
-        <div>
-          <label for="nombreCliente">SU NOMBRE</label>
-          <input type="text" v-model="nombreCliente" placeholder="Escribe tu nombre" id="nombreCliente" required />
-        </div>
-
-        <button type="submit">REALIZAR RESERVA</button>
+        <button type="submit" class="boton-reservar">REALIZAR RESERVA</button>
       </form>
     </div>
 
     <!-- Mensaje de éxito -->
-    <div v-if="reservaExito">
+    <div v-if="reservaExito" class="mensaje-exito">
       <p>¡RESERVA EXITOSA! <br> LA CANCHA HA SIDO RESERVADA CORRECTAMENTE</p>
     </div>
   </div>
@@ -61,66 +88,76 @@
 
 <script>
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 
 export default {
   data() {
     return {
-      clientes: [],            // Lista de clientes
-      canchas: [],             // Lista de canchas filtradas
-      clienteSeleccionado: null, // Cliente seleccionado
-      canchaSeleccionada: null, // Cancha seleccionada para reservar
-      fecha: '',               // Fecha de la reserva
-      horaInicio: '',          // Hora de inicio de la reserva
-      horaFin: '',             // Hora de fin de la reserva
-      nombreCliente: '',       // Nombre del cliente
-      reservaExito: false      // Estado de éxito de la reserva
+      clientes: [],
+      canchas: [],
+      clienteSeleccionado: null,
+      canchaSeleccionada: null,
+      fecha: '',
+      horaInicio: '',
+      horaFin: '',
+      nombreCliente: '',  // Esto será el nombre del usuario autenticado
+      reservaExito: false,
+      selectedClient: null, 
+      isClientDropdownOpen: false, 
     };
   },
+  computed: {
+    ...mapGetters({
+      user: 'getUser',  // Obtiene el usuario autenticado desde Vuex
+    }),
+  },
   created() {
-    this.getClientes(); // Obtener clientes al crear el componente
+    this.getClientes(); 
+    this.nombreCliente = this.user.nombre;  // Asigna el nombre del usuario autenticado al cargar el componente
   },
   methods: {
-    // Obtener la lista de clientes desde el servidor
     async getClientes() {
-      const token = localStorage.getItem('token'); // Obtener el token de localStorage
+      const token = localStorage.getItem('token');
       try {
-        const response = await axios.get('http://localhost:3000/api/reservas/getClientes', { // Corregido
-          headers: {
-            Authorization: `Bearer ${token}` // Enviar el token en el encabezado
-          }
+        const response = await axios.get('http://localhost:3000/api/reservas/getClientes', {
+          headers: { Authorization: `Bearer ${token}` }
         });
         this.clientes = response.data;
-        // Selecciona el primer cliente si existe
         if (this.clientes.length > 0) {
+          this.selectedClient = this.clientes[0];
           this.clienteSeleccionado = this.clientes[0].id;
-          this.getCanchas();
+          this.getCanchas(); 
         }
       } catch (error) {
         console.error('Error al obtener los clientes:', error);
       }
     },
-    // Obtener las canchas según el cliente seleccionado
+    toggleClientDropdown() {
+      this.isClientDropdownOpen = !this.isClientDropdownOpen;
+    },
+    selectCliente(cliente) {
+      this.selectedClient = cliente;
+      this.clienteSeleccionado = cliente.id;
+      this.isClientDropdownOpen = false; 
+      this.getCanchas(); 
+    },
     async getCanchas() {
-      const token = localStorage.getItem('token'); // Obtener el token de localStorage
+      const token = localStorage.getItem('token');
       try {
-        const response = await axios.get(`http://localhost:3000/api/reservas/getCanchas?getClientes_id=${this.clienteSeleccionado}`, { // Corregido
-          headers: {
-            Authorization: `Bearer ${token}` // Enviar el token en el encabezado
-          }
+        const response = await axios.get(`http://localhost:3000/api/reservas/getCanchas?cliente_id=${this.clienteSeleccionado}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
         this.canchas = response.data;
       } catch (error) {
         console.error('Error al obtener las canchas:', error);
       }
     },
-    // Seleccionar una cancha para realizar la reserva
     seleccionarCancha(cancha) {
       this.canchaSeleccionada = cancha;
-      this.reservaExito = false; // Resetear el mensaje de éxito
+      this.reservaExito = false; 
     },
-    // Realizar la reserva de la cancha seleccionada
     async reservarCancha() {
-      const token = localStorage.getItem('token'); // Obtener el token de localStorage
+      const token = localStorage.getItem('token');
       const reserva = {
         cancha_id: this.canchaSeleccionada.id,
         fecha: this.fecha,
@@ -131,157 +168,30 @@ export default {
 
       try {
         await axios.post('http://localhost:3000/api/reservas/makeReserva', reserva, {
-          headers: {
-            Authorization: `Bearer ${token}` // Enviar el token en el encabezado
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
-        this.reservaExito = true; // Mostrar mensaje de éxito
-        this.resetForm(); // Resetear el formulario
+        this.reservaExito = true; 
+        this.resetForm(); 
       } catch (error) {
         console.error('Error al realizar la reserva:', error);
       }
     },
-    // Resetear el formulario de reserva
     resetForm() {
       this.fecha = '';
       this.horaInicio = '';
       this.horaFin = '';
-      this.nombreCliente = '';
-      this.canchaSeleccionada = null; // Resetear la cancha seleccionada
+      this.canchaSeleccionada = null;
+      this.nombreCliente = this.user.nombre;  // Restablece el nombre del usuario autenticado después de la reserva
     }
   }
 };
 </script>
 
+
+
+
 <style scoped>
-/* Centrar todos los elementos */
-div {
-  text-align: center;
-  font-family: 'Arial', sans-serif;
-}
+@import url('../styles/FutbolCanchasForm.css');  /* Importando los estilos externos */
 
-/* Títulos */
-h1, h2, h3 {
-  margin-bottom: 15px;
-  color: #2c3e50; /* Un azul oscuro para los títulos */
-}
-
-/* Estilos del formulario */
-form {
-  margin-top: 20px;
-  padding: 30px; /* Aumentar el padding para más espacio */
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
-  display: inline-block;
-  text-align: left;
-  width: 100%;
-  max-width: 400px; /* Limitar el ancho máximo del formulario */
-}
-
-/* Estilo de los elementos del formulario */
-form div {
-  margin-bottom: 25px; /* Aumentar el margen inferior */
-}
-
-label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
-  color: #34495e; /* Un gris oscuro para las etiquetas */
-}
-
-input, select {
-  padding: 12px; /* Aumentar el padding para mejor interacción */
-  width: 100%;
-  box-sizing: border-box;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  margin-top: 5px;
-  font-size: 16px;
-  transition: border-color 0.3s; /* Transición para el borde */
-}
-
-/* Efecto en el input al enfocar */
-input:focus, select:focus {
-  border-color: #007bff; /* Color de borde azul al enfocar */
-  outline: none; /* Eliminar el contorno por defecto */
-}
-
-button {
-  padding: 12px 20px;
-  background-color: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s, transform 0.2s; /* Añadir efecto de transform */
-}
-
-button:hover {
-  background-color: #218838;
-  transform: scale(1.05); /* Efecto de escalado al pasar el mouse */
-}
-
-/* Estilos para la lista de canchas */
-ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 20px 0; /* Añadir margen superior e inferior */
-}
-
-li {
-  margin: 15px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  border: 1px solid #e1e1e1; /* Añadir borde a cada item */
-  border-radius: 5px;
-  background-color: #f9f9f9; /* Fondo ligero */
-  transition: background-color 0.3s; /* Transición de fondo */
-}
-
-li:hover {
-  background-color: #f0f8ff; /* Color de fondo al pasar el mouse */
-}
-
-li button {
-  margin-left: 10px;
-  padding: 8px 12px;
-  background-color: #007bff; /* Cambiar el color del botón a azul */
-  color: #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-li button:hover {
-  background-color: #0056b3;
-}
-
-p {
-  color: #28a745; /* Color verde para el mensaje de éxito */
-  font-weight: bold;
-  font-size: 18px;
-}
-
-/* Mejorar el diseño de la selección */
-select {
-  appearance: none;
-  background: url('data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDAwMDAwIiBoZWlnaHQ9IjEycHgiIHdpZHRoPSIxMnB4IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik01IDBMMCA1LjAwMUwxMCAxMEwxNSAwWiIvPjwvc3ZnPg==') no-repeat right 10px center;
-  background-color: #ffffff;
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-/* Estilos para inputs de fecha y hora */
-input[type="date"], input[type="time"] {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-}
+/* Los estilos locales pueden ir aquí si los necesitas */
 </style>
-
