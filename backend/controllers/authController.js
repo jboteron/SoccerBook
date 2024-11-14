@@ -33,6 +33,7 @@ exports.register = async (req, res) => {
 
 // Función para iniciar sesión
 exports.login = async (req, res) => {
+    // Validar errores en la solicitud
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -41,19 +42,29 @@ exports.login = async (req, res) => {
     const { correo, password } = req.body;
 
     try {
+        // Buscar usuario en la base de datos
         const [results] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [correo]);
         if (results.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
         const user = results[0];
+        
+        // Verificar contraseña
         const passwordIsValid = bcrypt.compareSync(password, user.password);
         if (!passwordIsValid) {
             return res.status(401).json({ auth: false, token: null, message: 'Contraseña incorrecta' });
         }
 
-        const token = jwt.sign({ id: user.id }, jwtConfig.secret, { expiresIn: jwtConfig.expiresIn });
-        res.status(200).json({ auth: true, token });
+        // Incluir el rol en el payload del token
+        const token = jwt.sign(
+            { id: user.id, role: user.role }, // Aquí incluimos el rol del usuario
+            jwtConfig.secret,
+            { expiresIn: jwtConfig.expiresIn }
+        );
+
+        // Enviar el token y el rol como respuesta
+        res.status(200).json({ auth: true, token, role: user.role });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error en el servidor', error: 'No se pudo iniciar sesión' });

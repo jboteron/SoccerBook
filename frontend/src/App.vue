@@ -1,19 +1,19 @@
 <template>
   <div id="app">
-    <!-- Barra de navegación -->
-    <NavBarComponent />
+    <!-- Mostrar la barra de navegación solo si el usuario no es administrador -->
+    <NavBarComponent v-if="!isAdmin"  />
 
-    <!-- Mostrar perfil de usuario (opcional) -->
+    <!-- Mostrar perfil de usuario si está autenticado -->
     <UserProfile v-if="isLoggedIn" />
 
-    <!-- Router View para cargar las vistas basadas en las rutas -->
-    <router-view />
+   <!-- Router View para cargar las vistas basadas en las rutas -->
+    <router-view v-if="!isAdmin" />
+
+    <!-- Mostrar el Dashboard solo si el usuario es admin -->
+    <AdminDashboard v-if="isAdmin" />
 
     <!-- Pie de página -->
     <FooterSection />
-
-    <SubirCliente />
-
   </div>
 </template>
 
@@ -21,27 +21,32 @@
 import NavBarComponent from './components/NavBarComponent.vue';
 import FooterSection from './components/FooterSection.vue';
 import UserProfile from './views/UserProfile.vue';
-import SubirCliente from './views/SubirCliente.vue';
+import AdminDashboard from './AdminDashboard.vue';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'App',
   components: {
     NavBarComponent,
+    AdminDashboard,
     FooterSection,
-    UserProfile,
-    SubirCliente,
+    UserProfile,    
   },
   computed: {
-    ...mapGetters(['isLoggedIn']), // Verificar si el usuario está autenticado
+    ...mapGetters(['isLoggedIn', 'userRole']),
+    isAdmin() {
+      return this.userRole === 'admin';
+    },
   },
   methods: {
-    ...mapActions(['checkAuth']), // Verifica la autenticación al cargar la app
+    ...mapActions(['checkAuth']),
   },
   created() {
-    // Al cargar la aplicación, verificar si el token es válido
     this.checkAuth();
-  }
+  },
 };
 </script>
 
+<style scoped>
+/* Estilos globales o específicos */
+</style>

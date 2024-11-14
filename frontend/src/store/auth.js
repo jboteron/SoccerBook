@@ -1,12 +1,14 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode'; // Importación corregida
+import { jwtDecode } from 'jwt-decode'; // Importación correcta de jwt-decode
 
 // Estado inicial
 const state = {
   authToken: localStorage.getItem('token') || null, // Carga el token del localStorage
   tokenExpiration: localStorage.getItem('tokenExpiration') || null, // Carga la expiración del token
   user: null, // Información del usuario
+  isLoggedIn: false, // Estado de autenticación
+  userRole: localStorage.getItem('userRole') || null, // Carga el rol del usuario
 };
 
 // Mutaciones
@@ -14,16 +16,31 @@ const mutations = {
   SET_AUTH_TOKEN(state, { token, expiration }) {
     state.authToken = token;
     state.tokenExpiration = expiration;
+    state.isLoggedIn = true;
+    localStorage.setItem('token', token);
+    localStorage.setItem('tokenExpiration', expiration);
   },
   CLEAR_AUTH_TOKEN(state) {
     state.authToken = null;
     state.tokenExpiration = null;
     state.user = null; // Limpia el estado del usuario
+    state.isLoggedIn = false;
+    state.userRole = null;
     localStorage.removeItem('token'); // Limpia el token en localStorage
     localStorage.removeItem('tokenExpiration'); // Limpia la expiración en localStorage
+    localStorage.removeItem('userRole'); // Limpia el rol en localStorage
   },
   SET_USER(state, user) {
     state.user = user;
+    state.userRole = user.role || state.userRole; // Asigna el rol del usuario
+    localStorage.setItem('userRole', state.userRole); // Almacena el rol en localStorage
+  },
+  SET_USER_ROLE(state, role) {
+    state.userRole = role;
+    localStorage.setItem('userRole', role);
+  },
+  SET_LOGIN_STATUS(state, status) {
+    state.isLoggedIn = status;
   },
 };
 
@@ -90,12 +107,21 @@ const actions = {
       }
     }
   },
+
+  setUserRole({ commit }, role) {
+    commit('SET_USER_ROLE', role);
+  },
+
+  setLoginStatus({ commit }, status) {
+    commit('SET_LOGIN_STATUS', status);
+  },
 };
 
 // Getters
 const getters = {
   isLoggedIn: (state) => !!state.authToken && Date.now() < parseInt(state.tokenExpiration, 10),
   getUser: (state) => state.user,
+  userRole: (state) => state.userRole,
 };
 
 // Crear el store

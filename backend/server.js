@@ -11,7 +11,9 @@ const authRoutes = require('./routes/authRoutes'); // Rutas de autenticación
 const reservaRoutes = require('./routes/reservaRoutes'); // Rutas para reservas
 const camRoutes = require('./routes/camRoutes'); // Rutas para mensajes de contacto
 const clienteRoutes = require('./routes/clienteRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const verifyToken = require('./middleware/verifyToken'); // Middleware de autenticación
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +30,7 @@ app.use(bodyParser.json());
 
 // Rutas de la API
 app.use('/api', clienteRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes); // Rutas de autenticación
 app.use('/api/reservas', verifyToken, reservaRoutes); // Rutas protegidas para reservas
 app.use('/api/cam', camRoutes); // Rutas para mensajes de contacto

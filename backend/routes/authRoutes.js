@@ -2,6 +2,7 @@ const express = require('express');
 const { check } = require('express-validator');
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
+const verifyToken = require('../middleware/verifyToken');
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ router.post(
 );
 
 // Ruta protegida para obtener información del usuario
-router.get('/user', authMiddleware, authController.user);
+router.get('/user', verifyToken, authController.user);
 
 router.post('/logout', authController.logout);
 

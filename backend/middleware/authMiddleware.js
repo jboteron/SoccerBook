@@ -1,21 +1,24 @@
-// backend/middleware/verifyToken.js
-
 const jwt = require('jsonwebtoken');
+const jwtConfig = require('../config/jwtConfig'); // Asegúrate de que la ruta sea correcta
 
-module.exports = (req, res, next) => {
-    const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+// Middleware para verificar el token JWT
+const verifyToken = (req, res, next) => {
+  const token = req.headers['x-access-token'];
 
-    if (!token) {
-        return res.status(401).json({ message: 'No se proporcionó el token' });
+  if (!token) {
+    return res.status(403).json({ auth: false, message: 'No se proporcionó un token' });
+  }
+
+  jwt.verify(token, jwtConfig.secret, (err, decoded) => {
+    if (err) {
+      return res.status(500).json({ auth: false, message: 'Fallo al autenticar el token' });
     }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: 'Token no válido' });
-        }
-
-        req.userId = decoded.id; // Suponiendo que el id del usuario está en el payload
-        next();
-    });
+    
+    // Guardar el id de usuario y rol para usarlo en la solicitud
+    req.userId = decoded.id;
+    req.userRole = decoded.role;
+    next();
+  });
 };
 
+module.exports = verifyToken;

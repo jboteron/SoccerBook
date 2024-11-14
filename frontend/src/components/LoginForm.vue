@@ -33,8 +33,8 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'; 
-import {jwtDecode} from 'jwt-decode'; // Importación correcta de jwt-decode
+import { mapActions } from 'vuex';
+import { jwtDecode } from 'jwt-decode'; // Importación correcta de jwt-decode
 
 export default {
   data() {
@@ -60,9 +60,17 @@ export default {
         if (token) {
           const user = jwtDecode(token); // Decodifica el token para obtener información del usuario
           console.log('Usuario:', user); // Muestra la información del usuario en la consola
-        }
 
-        this.$router.push('/'); // Redirige al inicio después de iniciar sesión
+          // Almacena el rol del usuario para usarlo en redirección
+          localStorage.setItem('role', user.role); 
+
+          // Redirige según el rol del usuario
+          if (user.role === 'admin') {
+            this.$router.push('/admin-dashboard'); // Redirige al dashboard del admin
+          } else {
+            this.$router.push('/user-dashboard'); // Redirige al dashboard del usuario
+          }
+        }
       } catch (error) {
         this.handleError(error); // Llama a la función de manejo de errores
       }
@@ -87,7 +95,8 @@ export default {
 };
 </script>
 
-}
+
+
 <style scoped>
 .login-container {
   text-align: center;
