@@ -1,61 +1,81 @@
-// backend/routes/adminRoutes.js
 const express = require('express');
 const router = express.Router();
+const adminController = require('../controllers/adminController');
 
+// Middleware para verificar el rol de administrador
+const checkAdminRole = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ error: 'Acceso denegado' });
+    }
+};
 
-const {
-    createUsuario,
-    getUsuarios,
-    updateUsuario,
-    deleteUsuario,
-    createCancha,
-    getCanchas,
-    updateCancha,
-    deleteCancha,
-    createCliente,
-    getClientes,
-    updateCliente,
-    deleteCliente,
-    createPregunta,
-    getPreguntas,
-    deletePregunta,
-    createReserva,
-    getReservas,
-    updateReserva,
-    deleteReserva,
-    getDashboard
-} = require('../controllers/adminController');
+// Ruta de acceso al dashboard del administrador
+router.get('/dashboard', checkAdminRole, adminController.getDashboard);
 
-// Rutas para el dashboard
-router.get('/dashboard', getDashboard);
+// ======================== Rutas para Canchas ========================
 
-// Rutas para los usuarios
-router.post('/usuarios', createUsuario);
-router.get('/usuarios', getUsuarios);
-router.put('/usuarios/:id', updateUsuario);
-router.delete('/usuarios/:id', deleteUsuario);
+// Crear una cancha
+router.post('/canchas', checkAdminRole, adminController.createCancha);
 
-// Rutas para las canchas
-router.post('/canchas', createCancha);
-router.get('/canchas', getCanchas);
-router.put('/canchas/:id', updateCancha);
-router.delete('/canchas/:id', deleteCancha);
+// Obtener todas las canchas
+router.get('/canchas', checkAdminRole, adminController.getCanchas);
 
-// Rutas para los clientes
-router.post('/clientes', createCliente);
-router.get('/clientes', getClientes);
-router.put('/clientes/:id', updateCliente);
-router.delete('/clientes/:id', deleteCliente);
+// Actualizar una cancha por ID
+router.put('/canchas/:id', checkAdminRole, adminController.updateCancha);
 
-// Rutas para las preguntas
-router.post('/preguntas', createPregunta);
-router.get('/preguntas', getPreguntas);
-router.delete('/preguntas/:id', deletePregunta);
+// Eliminar una cancha por ID
+router.delete('/canchas/:id', checkAdminRole, adminController.deleteCancha);
 
-// Rutas para las reservas
-router.post('/reservas', createReserva);
-router.get('/reservas', getReservas);
-router.put('/reservas/:id', updateReserva);
-router.delete('/reservas/:id', deleteReserva);
+// ======================== Rutas para Clientes ========================
+
+// Crear cliente con imagen en binario
+router.post('/clientes', checkAdminRole, adminController.upload.single('imagen'), adminController.createCliente);
+
+// Obtener imagen de cliente por ID
+router.get('/clientes/:id/imagen', checkAdminRole, adminController.getClienteImagen);
+
+// Actualizar cliente con imagen en binario
+router.put('/clientes/:id', checkAdminRole, adminController.upload.single('imagen'), adminController.updateCliente);
+
+// Eliminar cliente por ID
+router.delete('/clientes/:id', checkAdminRole, adminController.deleteCliente);
+
+// ======================== Rutas para Preguntas ========================
+
+// Crear una pregunta
+router.post('/preguntas', adminController.createPregunta);
+
+// Obtener todas las preguntas
+router.get('/preguntas', adminController.getPreguntas);
+
+// Eliminar una pregunta por ID
+router.delete('/preguntas/:id', checkAdminRole, adminController.deletePregunta);
+
+// ======================== Rutas para Reservas ========================
+
+// Crear una reserva
+router.post('/reservas', adminController.createReserva);
+
+// Obtener todas las reservas
+router.get('/reservas', adminController.getReservas);
+
+// Actualizar una reserva por ID
+router.put('/reservas/:id', checkAdminRole, adminController.updateReserva);
+
+// Eliminar una reserva por ID
+router.delete('/reservas/:id', checkAdminRole, adminController.deleteReserva);
+
+// ======================== Rutas para Usuarios ========================
+
+// Crear usuario con imagen en binario
+router.post('/usuarios', checkAdminRole, adminController.upload.single('foto'), adminController.createUsuario);
+
+// Actualizar usuario con imagen en binario
+router.put('/usuarios/:id', checkAdminRole, adminController.upload.single('foto'), adminController.updateUsuario);
+
+// Eliminar usuario por ID
+router.delete('/usuarios/:id', checkAdminRole, adminController.deleteUsuario);
 
 module.exports = router;

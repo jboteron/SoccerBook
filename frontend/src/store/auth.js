@@ -48,7 +48,7 @@ const mutations = {
 const actions = {
   async login({ commit }, credentials) {
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', credentials);
+      const response = await axios.post('/api/auth/login', credentials);
       const { token } = response.data;
       const expirationDuration = 3600000; // 1 hora por defecto
       const expirationTime = Date.now() + expirationDuration;
@@ -71,7 +71,7 @@ const actions = {
   async logout({ commit }) {
     try {
       // Cambiamos a POST para el logout
-      await axios.post('http://localhost:3000/api/auth/logout');
+      await axios.post('/api/auth/logout');
       commit('CLEAR_AUTH_TOKEN'); // Limpiar token y usuario después de una respuesta exitosa
     } catch (error) {
       console.error('Error en el logout:', error);
@@ -95,7 +95,7 @@ const actions = {
 
   async fetchUser({ commit }) {
     try {
-      const response = await axios.get('http://localhost:3000/api/auth/user', {
+      const response = await axios.get('/api/auth/user', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       commit('SET_USER', response.data); // Almacena la información del usuario

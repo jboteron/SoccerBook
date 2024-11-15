@@ -1,16 +1,18 @@
-const pool = require('../config/db'); // conexión a la base de datos
-const bcrypt = require('bcryptjs'); // para cifrar contraseñas
-const { validationResult } = require('express-validator'); // validación de datos de entrada
+const pool = require('../config/db');
+const bcrypt = require('bcryptjs');
 const multer = require('multer');
 
 // Configuración de almacenamiento en memoria con multer
-const storage = multer.memoryStorage(); // O puedes usar `diskStorage()` si prefieres guardar en disco
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
+exports.upload = upload;
 
-// Función para obtener el dashboard del administrador
+// Dashboard del administrador
 exports.getDashboard = async (req, res) => {
     res.status(200).json({ message: 'Bienvenido al dashboard del administrador' });
 };
+
+// ======================== CRUD de Canchas ========================
 
 // Crear cancha
 exports.createCancha = async (req, res) => {
@@ -27,7 +29,7 @@ exports.createCancha = async (req, res) => {
     }
 };
 
-// Leer canchas
+// Obtener todas las canchas
 exports.getCanchas = async (req, res) => {
     try {
         const [results] = await pool.query('SELECT * FROM canchas');
@@ -66,9 +68,13 @@ exports.deleteCancha = async (req, res) => {
     }
 };
 
-// Crear cliente
-exports.createCliente = async (req, res) => {
-    const { nombre, direccion, telefono, correo, imagen } = req.body;
+// ======================== CRUD de Clientes ========================
+
+// Crear cliente con imagen en binario
+exports.createCliente = [upload.single('imagen'), async (req, res) => {
+    const { nombre, direccion, telefono, correo } = req.body;
+    const imagen = req.file ? req.file.buffer : null;
+
     try {
         const [result] = await pool.query(
             'INSERT INTO clientes (nombre, direccion, telefono, correo, imagen) VALUES (?, ?, ?, ?, ?)',
@@ -79,23 +85,32 @@ exports.createCliente = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Error al crear el cliente' });
     }
-};
+}];
 
-// Leer clientes
-exports.getClientes = async (req, res) => {
+// Obtener imagen de cliente en binario
+exports.getClienteImagen = async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const [results] = await pool.query('SELECT * FROM clientes');
-        res.status(200).json(results);
+        const [rows] = await pool.query('SELECT imagen FROM clientes WHERE id = ?', [id]);
+        if (rows.length > 0 && rows[0].imagen) {
+            res.set('Content-Type', 'image/jpeg');
+            res.send(rows[0].imagen);
+        } else {
+            res.status(404).json({ error: 'Imagen no encontrada' });
+        }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Error al obtener clientes' });
+        res.status(500).json({ error: 'Error al obtener la imagen' });
     }
 };
 
-// Actualizar cliente
-exports.updateCliente = async (req, res) => {
+// Actualizar cliente con imagen en binario
+exports.updateCliente = [upload.single('imagen'), async (req, res) => {
     const { id } = req.params;
-    const { nombre, direccion, telefono, correo, imagen } = req.body;
+    const { nombre, direccion, telefono, correo } = req.body;
+    const imagen = req.file ? req.file.buffer : null;
+
     try {
         await pool.query(
             'UPDATE clientes SET nombre = ?, direccion = ?, telefono = ?, correo = ?, imagen = ? WHERE id = ?',
@@ -106,11 +121,12 @@ exports.updateCliente = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Error al actualizar el cliente' });
     }
-};
+}];
 
 // Eliminar cliente
 exports.deleteCliente = async (req, res) => {
     const { id } = req.params;
+
     try {
         await pool.query('DELETE FROM clientes WHERE id = ?', [id]);
         res.status(200).json({ message: 'Cliente eliminado' });
@@ -119,6 +135,8 @@ exports.deleteCliente = async (req, res) => {
         res.status(500).json({ error: 'Error al eliminar el cliente' });
     }
 };
+
+// ======================== CRUD de Preguntas ========================
 
 // Crear pregunta
 exports.createPregunta = async (req, res) => {
@@ -135,7 +153,7 @@ exports.createPregunta = async (req, res) => {
     }
 };
 
-// Leer preguntas
+// Obtener todas las preguntas
 exports.getPreguntas = async (req, res) => {
     try {
         const [results] = await pool.query('SELECT * FROM preguntas');
@@ -158,6 +176,8 @@ exports.deletePregunta = async (req, res) => {
     }
 };
 
+// ======================== CRUD de Reservas ========================
+
 // Crear reserva
 exports.createReserva = async (req, res) => {
     const { cancha_id, fecha, hora_inicio, hora_fin, nombre_cliente } = req.body;
@@ -173,7 +193,7 @@ exports.createReserva = async (req, res) => {
     }
 };
 
-// Leer reservas
+// Obtener todas las reservas
 exports.getReservas = async (req, res) => {
     try {
         const [results] = await pool.query('SELECT * FROM reservas');
@@ -212,12 +232,14 @@ exports.deleteReserva = async (req, res) => {
     }
 };
 
-// Crear usuario
+// ======================== CRUD de Usuarios ========================
+
+// Crear usuario con imagen en binario
 exports.createUsuario = [upload.single('foto'), async (req, res) => {
     const { nombre, correo, password, role } = req.body;
     const hashedPassword = bcrypt.hashSync(password, 8);
-    const foto = req.file ? req.file.buffer : null; // Si se sube una foto, se almacena en `foto`
-    
+    const foto = req.file ? req.file.buffer : null;
+
     try {
         const [result] = await pool.query(
             'INSERT INTO usuarios (nombre, correo, password, role, foto) VALUES (?, ?, ?, ?, ?)',
@@ -230,27 +252,16 @@ exports.createUsuario = [upload.single('foto'), async (req, res) => {
     }
 }];
 
-// Leer usuarios
-exports.getUsuarios = async (req, res) => {
-    try {
-        const [results] = await pool.query('SELECT * FROM usuarios');
-        res.status(200).json(results);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error al obtener usuarios' });
-    }
-};
-
 // Actualizar usuario
 exports.updateUsuario = [upload.single('foto'), async (req, res) => {
     const { id } = req.params;
     const { nombre, correo, password, role } = req.body;
-    const hashedPassword = bcrypt.hashSync(password, 8);
-    const foto = req.file ? req.file.buffer : null; // Si se sube una nueva foto, se almacena en `foto`
-    
+    const hashedPassword = password ? bcrypt.hashSync(password, 8) : undefined;
+    const foto = req.file ? req.file.buffer : null;
+
     try {
         await pool.query(
-            'UPDATE usuarios SET nombre = ?, correo = ?, password = ?, role = ?, foto = ? WHERE id = ?',
+            'UPDATE usuarios SET nombre = ?, correo = ?, password = COALESCE(?, password), role = ?, foto = COALESCE(?, foto) WHERE id = ?',
             [nombre, correo, hashedPassword, role, foto, id]
         );
         res.status(200).json({ message: 'Usuario actualizado' });
