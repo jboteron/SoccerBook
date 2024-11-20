@@ -1,181 +1,199 @@
 <template>
-  <div class="reservas">
-    <h2>Gestión de Reservas</h2>
-
-    <!-- Formulario para Crear o Editar una Reserva -->
-    <div v-if="modoCreacion || modoEdicion">
-      <h3>{{ modoEdicion ? 'Editar Reserva' : 'Crear Reserva' }}</h3>
-      <form @submit.prevent="guardarReserva">
-        <div>
-          <label for="cancha_id">Cancha:</label>
-          <input type="number" v-model="reserva.cancha_id" required />
-        </div>
-        <div>
-          <label for="fecha">Fecha:</label>
-          <input type="date" v-model="reserva.fecha" required />
-        </div>
-        <div>
-          <label for="hora_inicio">Hora de Inicio:</label>
-          <input type="time" v-model="reserva.hora_inicio" required />
-        </div>
-        <div>
-          <label for="hora_fin">Hora de Fin:</label>
-          <input type="time" v-model="reserva.hora_fin" required />
-        </div>
-        <div>
-          <label for="nombre_cliente">Nombre del Cliente:</label>
-          <input type="text" v-model="reserva.nombre_cliente" required />
-        </div>
-        <button type="submit">{{ modoEdicion ? 'Actualizar Reserva' : 'Crear Reserva' }}</button>
-        <button type="button" @click="cancelarOperacion">Cancelar</button>
-      </form>
-    </div>
+  <div>
+    <h1>Gestión de Reservas</h1>
 
     <!-- Lista de Reservas -->
-    <div v-else>
-      <h3>Reservas Existentes</h3>
-      <ul>
-        <li v-for="reserva in reservas" :key="reserva.id">
-          <div>
-            <strong>{{ reserva.nombre_cliente }}</strong> - {{ reserva.fecha }} 
-            de {{ reserva.hora_inicio }} a {{ reserva.hora_fin }}
-            <button @click="editarReserva(reserva)">Editar</button>
-            <button @click="eliminarReserva(reserva.id)">Eliminar</button>
-          </div>
-        </li>
-      </ul>
-      <button @click="modoCreacion = true">Crear Nueva Reserva</button>
+    <div>
+      <h2>Reservas Actuales</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cancha</th>
+            <th>Fecha</th>
+            <th>Hora Inicio</th>
+            <th>Hora Fin</th>
+            <th>Cliente</th>
+            <th>Fecha de Creación</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="reserva in reservas" :key="reserva.id">
+            <td>{{ reserva.id }}</td>
+            <td>{{ reserva.nombre_cancha }}</td>
+            <td>{{ reserva.fecha }}</td>
+            <td>{{ reserva.hora_inicio }}</td>
+            <td>{{ reserva.hora_fin }}</td>
+            <td>{{ reserva.nombre_cliente }}</td>
+            <td>{{ reserva.fecha_creacion }}</td>
+            <td>
+              <button @click="editReserva(reserva.id)">Editar</button>
+              <button @click="deleteReserva(reserva.id)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Formulario para editar una reserva -->
+    <div v-if="isEditMode">
+      <h2>{{ formTitle }}</h2>
+      <form @submit.prevent="submitForm">
+        <label for="cancha_id">Cancha:</label>
+        <input type="text" id="cancha_id" v-model="form.cancha_id" required />
+        
+        <label for="fecha">Fecha:</label>
+        <input type="date" id="fecha" v-model="form.fecha" required />
+        
+        <label for="hora_inicio">Hora Inicio:</label>
+        <input type="time" id="hora_inicio" v-model="form.hora_inicio" required />
+        
+        <label for="hora_fin">Hora Fin:</label>
+        <input type="time" id="hora_fin" v-model="form.hora_fin" required />
+        
+        <label for="nombre_cliente">Nombre Cliente:</label>
+        <input type="text" id="nombre_cliente" v-model="form.nombre_cliente" required />
+        
+        <button type="submit">Actualizar Reserva</button>
+      </form>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   data() {
     return {
       reservas: [],
-      modoCreacion: false,
-      modoEdicion: false,
-      reserva: {
+      form: {
+        id: null,
         cancha_id: '',
         fecha: '',
         hora_inicio: '',
         hora_fin: '',
-        nombre_cliente: ''
+        nombre_cliente: '',
       },
-      reservaEdicionId: null
+      isEditMode: false,
+      formTitle: 'Editar Reserva',
     };
   },
-  created() {
-    this.obtenerReservas();
-  },
   methods: {
-    async obtenerReservas() {
+    // Cargar las reservas al cargar el componente
+    async loadReservas() {
       try {
-        const response = await axios.get('/api/admin/reservas');
-        this.reservas = response.data;
+        const response = await fetch('/api/admin/reservas');
+        const data = await response.json();
+        this.reservas = data;
       } catch (error) {
-        console.error('Error al obtener las reservas:', error);
-        alert('Hubo un error al obtener las reservas');
+        console.error('Error al cargar las reservas:', error);
       }
     },
-    async crearReserva() {
+
+    // Mostrar los datos de una reserva para editar
+    async editReserva(id) {
       try {
-        const response = await axios.post('/api/admin/reservas', this.reserva);
-        alert('Reserva creada con éxito');
-        this.modoCreacion = false;
-        this.reserva = { cancha_id: '', fecha: '', hora_inicio: '', hora_fin: '', nombre_cliente: '' };
-        await this.obtenerReservas();
+        const response = await fetch(`/api/admin/reservas/${id}`);
+        const data = await response.json();
+        this.form = { ...data };
+        this.isEditMode = true;
+        this.formTitle = 'Editar Reserva';
       } catch (error) {
-        console.error('Error al crear la reserva:', error);
-        alert('Hubo un error al crear la reserva');
+        console.error('Error al obtener la reserva:', error);
       }
     },
-    async actualizarReserva() {
+
+    // Actualizar la reserva
+    async submitForm() {
       try {
-        await axios.put(`/api/admin/reservas/${this.reservaEdicionId}`, this.reserva);
-        alert('Reserva actualizada con éxito');
-        this.modoEdicion = false;
-        this.reserva = { cancha_id: '', fecha: '', hora_inicio: '', hora_fin: '', nombre_cliente: '' };
-        await this.obtenerReservas();
-      } catch (error) {
-        console.error('Error al actualizar la reserva:', error);
-        alert('Hubo un error al actualizar la reserva');
-      }
-    },
-    async eliminarReserva(id) {
-      if (confirm('¿Estás seguro de que deseas eliminar esta reserva?')) {
-        try {
-          await axios.delete(`/api/admin/reservas/${id}`);
-          this.reservas = this.reservas.filter(reserva => reserva.id !== id);
-          alert('Reserva eliminada con éxito');
-        } catch (error) {
-          console.error('Error al eliminar la reserva:', error);
-          alert('Hubo un error al eliminar la reserva');
+        const method = 'PUT';
+        const url = `/api/admin/reservas/${this.form.id}`;
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(this.form),
+        });
+
+        if (response.ok) {
+          this.resetForm();
+          this.loadReservas();
+        } else {
+          const data = await response.json();
+          console.error('Error al actualizar la reserva:', data.error);
         }
+      } catch (error) {
+        console.error('Error al enviar los datos:', error);
       }
     },
-    editarReserva(reserva) {
-      this.modoEdicion = true;
-      this.reserva = { ...reserva };
-      this.reservaEdicionId = reserva.id;
-    },
-    cancelarOperacion() {
-      this.modoCreacion = false;
-      this.modoEdicion = false;
-      this.reserva = { cancha_id: '', fecha: '', hora_inicio: '', hora_fin: '', nombre_cliente: '' };
-    },
-    async guardarReserva() {
-      if (this.modoEdicion) {
-        await this.actualizarReserva();
-      } else {
-        await this.crearReserva();
+
+    // Eliminar una reserva
+    async deleteReserva(id) {
+      try {
+        const response = await fetch(`/api/admin/reservas/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          this.loadReservas();
+        } else {
+          const data = await response.json();
+          console.error('Error al eliminar la reserva:', data.error);
+        }
+      } catch (error) {
+        console.error('Error al eliminar la reserva:', error);
       }
-    }
-  }
+    },
+
+    // Restablecer el formulario
+    resetForm() {
+      this.form = {
+        id: null,
+        cancha_id: '',
+        fecha: '',
+        hora_inicio: '',
+        hora_fin: '',
+        nombre_cliente: '',
+      };
+      this.isEditMode = false;
+      this.formTitle = 'Editar Reserva';
+    },
+  },
+  mounted() {
+    this.loadReservas();
+  },
 };
 </script>
 
 <style scoped>
-.reservas {
-  max-width: 800px;
-  margin: 0 auto;
+/* Estilos para el componente */
+h1, h2 {
+  text-align: center;
 }
 
-h3 {
-  margin-top: 20px;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
 }
 
-form div {
-  margin-bottom: 10px;
+th, td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
 }
 
 button {
+  margin: 5px;
   padding: 5px 10px;
-  margin-top: 10px;
-}
-
-button[type="submit"] {
-  background-color: green;
+  background-color: #e67e22;
   color: white;
+  border: none;
+  cursor: pointer;
 }
 
-button[type="button"] {
-  background-color: red;
-  color: white;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+button:hover {
+  background-color: #f39c12;
 }
 </style>

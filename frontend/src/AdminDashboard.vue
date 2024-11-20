@@ -1,30 +1,51 @@
 <template>
   <div v-if="userRole === 'admin'">
     <div class="dashboard">
-      <h1>{{ message }}</h1>
+      <h1>Dashboard del Administrador</h1>
+      <div class="stats">
+        <div v-if="dashboardData" class="stat">
+          <p>Total de Canchas: {{ dashboardData.totalCanchas }}</p>
+          <p>Total de Clientes: {{ dashboardData.totalClientes }}</p>
+          <p>Total de Reservas: {{ dashboardData.totalReservas }}</p>
+          <p>Total de Preguntas: {{ dashboardData.totalPreguntas }}</p>
+          <p>Total de usuarios: {{ dashboardData.totalUsuarios }}</p>
+        </div>
+        <div v-else>
+          <p>Cargando estadísticas...</p>
+        </div>
+      </div>
+      <div class="top-data">
+        <h2>Canchas más reservadas</h2>
+        <ul>
+          <li v-for="cancha in topCanchas" :key="cancha.nombre">
+            {{ cancha.nombre }} - {{ cancha.reservasCount }} reservas
+          </li>
+        </ul>
+        <h2>Clientes más activos</h2>
+        <ul>
+          <li v-for="cliente in topClientes" :key="cliente.nombre">
+            {{ cliente.nombre }} - {{ cliente.reservasCount }} reservas
+          </li>
+        </ul>
+      </div>
     </div>
 
-    <!-- Navegación de secciones -->
-    <nav>
-      <button 
-        @click="currentSection = 'canchas'" 
-        :class="{'active': currentSection === 'canchas'}">Gestionar Canchas</button>
-      <button 
-        @click="currentSection = 'clientes'" 
-        :class="{'active': currentSection === 'clientes'}">Gestionar Clientes</button>
-      <button 
-        @click="currentSection = 'preguntas'" 
-        :class="{'active': currentSection === 'preguntas'}">Gestionar Preguntas</button>
-      <button 
-        @click="currentSection = 'reservas'" 
-        :class="{'active': currentSection === 'reservas'}">Gestionar Reservas</button>
-      <button 
-        @click="currentSection = 'usuarios'" 
-        :class="{'active': currentSection === 'usuarios'}">Gestionar Usuarios</button>
-      
+    <!-- Botón para abrir/cerrar la barra de navegación -->
+    <button class="toggle-button" @click="toggleSidebar">☰</button>
+
+    <!-- Barra de navegación desplegable -->
+    <div class="sidebar" :class="{ open: isOpen }">
+      <NavigationButton
+        v-for="section in sections"
+        :key="section.name"
+        :label="section.label"
+        :section="section.name"
+        :active="currentSection === section.name"
+        @changeSection="currentSection = $event"
+      />
       <!-- Botón de cerrar sesión -->
-      <button @click="logout">Cerrar sesión</button>
-    </nav>
+      <button class="logout-btn" @click="logout">Cerrar sesión</button>
+    </div>
 
     <!-- Renderizar sección correspondiente -->
     <div v-if="currentSection === 'canchas'">
@@ -56,51 +77,79 @@
 </template>
 
 <script>
-import axios from 'axios';
-import CanchaList from './views/admin/CanchaList.vue';
-import ClienteList from './views/admin/ClienteList.vue';
-import PreguntaList from './views/admin/PreguntaList.vue';
-import ReservaList from './views/admin/ReservaList.vue';
-import UsuarioList from './views/admin/UsuarioList.vue';
+import axios from "axios";
+import CanchaList from "./views/admin/CanchaList.vue";
+import ClienteList from "./views/admin/ClienteList.vue";
+import PreguntaList from "./views/admin/PreguntaList.vue";
+import ReservaList from "./views/admin/ReservaList.vue";
+import UsuarioList from "./views/admin/UsuarioList.vue";
+import NavigationButton from "./components/NavigationButton.vue";
 
 export default {
   data() {
     return {
-      message: 'Cargando...', // Mensaje predeterminado mientras se hace la solicitud
-      currentSection: 'canchas', // Sección inicial
+      dashboardData: null,
+      topCanchas: [],
+      topClientes: [],
+      currentSection: "canchas", // Sección inicial
+      isOpen: false, // Controla si la barra de navegación está abierta o cerrada
+      sections: [
+        { name: "canchas", label: "Gestionar Canchas" },
+        { name: "clientes", label: "Gestionar Clientes" },
+        { name: "preguntas", label: "Gestionar Preguntas" },
+        { name: "reservas", label: "Gestionar Reservas" },
+        { name: "usuarios", label: "Gestionar Usuarios" },
+      ],
     };
   },
-  async created() {
-    try {
-      const response = await axios.get('/api/admin/dashboard'); // Ruta de tu API
-      this.message = response.data.message; // Establecer el mensaje recibido desde el servidor
-    } catch (error) {
-      console.error('Error al cargar el dashboard:', error);
-      this.message = 'Error al cargar el dashboard'; // Mensaje de error si algo falla
-    }
+  created() {
+    this.fetchDashboardData();
+    this.fetchTopCanchasReservadas();
+    this.fetchTopClientesActivos();
   },
   computed: {
     userRole() {
       return this.$store.getters.userRole; // Obtener el rol desde Vuex
-    }
+    },
   },
   methods: {
+    async fetchDashboardData() {
+      try {
+        const response = await axios.get("/api/admin/dashboard");
+        this.dashboardData = response.data;
+      } catch (error) {
+        console.error("Error al obtener las estadísticas del dashboard", error);
+      }
+    },
+    async fetchTopCanchasReservadas() {
+      try {
+        const response = await axios.get("/api/admin/top-canchas");
+        this.topCanchas = response.data;
+      } catch (error) {
+        console.error("Error al obtener las canchas más reservadas", error);
+      }
+    },
+    async fetchTopClientesActivos() {
+      try {
+        const response = await axios.get("/api/admin/top-clientes");
+        this.topClientes = response.data;
+      } catch (error) {
+        console.error("Error al obtener los clientes más activos", error);
+      }
+    },
     fetchData() {
-      // Este método se puede conectar a cada componente para recargar datos si es necesario
       console.log("Recargando datos...");
     },
     logout() {
-      // Eliminar el token de localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('tokenExpiration');
-      localStorage.removeItem('userRole');
-      
-      // Limpiar también el estado de la sección activa y la autenticación en Vuex
-      this.$store.commit('CLEAR_AUTH_TOKEN');
-      
-      // Redirigir al usuario a la página de login
-      this.$router.push('/login');
-    }
+      localStorage.removeItem("token");
+      localStorage.removeItem("tokenExpiration");
+      localStorage.removeItem("userRole");
+      this.$store.commit("CLEAR_AUTH_TOKEN");
+      this.$router.push("/login");
+    },
+    toggleSidebar() {
+      this.isOpen = !this.isOpen; // Cambia entre abierto y cerrado
+    },
   },
   components: {
     CanchaList,
@@ -108,51 +157,93 @@ export default {
     PreguntaList,
     ReservaList,
     UsuarioList,
-  }
+    NavigationButton,
+  },
 };
 </script>
-
-<style scoped>
-/* Aquí puedes agregar tus estilos para el dashboard */
-button.active {
-  background-color: #42b983;
-}
-</style>
-
-
-
 
 <style scoped>
 .dashboard {
   text-align: center;
   padding: 20px;
 }
-h1 {
-  font-size: 24px;
-  color: #333;
-}
-
-nav {
+.stats, .top-data {
   margin-bottom: 1rem;
 }
-
-button.active {
-  background-color: #42b983; /* O cualquier color que desees para resaltar */
-  color: white;
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 button {
-  margin-right: 0.5rem;
   padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
   background-color: #42b983;
   color: white;
   border: none;
-  cursor: pointer;
-  border-radius: 4px;
+  transition: background-color 0.3s;
 }
 button.active {
-  background-color: #3d668f; /* Cambio de color cuando el botón está activo */
+  background-color: #3d668f;
 }
 button:hover {
-  background-color: #e67e22; /* Color en hover */
+  background-color: #e67e22;
+}
+.logout-btn {
+  background-color: red;
+}
+.toggle-button {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  background-color: #42b983;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  border-radius: 4px;
+  z-index: 1000;
+  transition: background-color 0.3s;
+}
+.toggle-button:hover {
+  background-color: #3d668f;
+}
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 250px;
+  background-color: #333;
+  color: white;
+  padding: 1rem;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 999;
+}
+.sidebar.open {
+  transform: translateX(0); /* Muestra la barra */
+}
+.sidebar button {
+  display: block;
+  margin: 1rem 0;
+  background-color: transparent;
+  color: white;
+  text-align: left;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+.sidebar button.active {
+  background-color: #42b983;
+}
+.sidebar button:hover {
+  background-color: #3d668f;
 }
 </style>

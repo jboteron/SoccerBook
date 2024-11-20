@@ -1,81 +1,63 @@
 const express = require('express');
 const router = express.Router();
-const adminController = require('../controllers/adminController');
 
-// Middleware para verificar el rol de administrador
-const checkAdminRole = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
-        next();
-    } else {
-        res.status(403).json({ error: 'Acceso denegado' });
-    }
-};
+// Controladores de las canchas
+const { createCancha, getCanchas, updateCancha, deleteCancha } = require('../controllers/admin/canchasController');
 
-// Ruta de acceso al dashboard del administrador
-router.get('/dashboard', checkAdminRole, adminController.getDashboard);
+// Controladores de los clientes
+const { createCliente, getAllClientes, getClienteImagen, updateCliente, deleteCliente } = require('../controllers/admin/clientesController');
 
-// ======================== Rutas para Canchas ========================
+// Controladores de las preguntas
+const { createPregunta, getPreguntas, deletePregunta } = require('../controllers/admin/preguntasController');
 
-// Crear una cancha
-router.post('/canchas', checkAdminRole, adminController.createCancha);
+// Controladores de las reservas
+const { getReservaById, getReservas, updateReserva, deleteReserva } = require('../controllers/admin/reservasController');
 
-// Obtener todas las canchas
-router.get('/canchas', checkAdminRole, adminController.getCanchas);
+// Controladores de los usuarios
+const userController = require('../controllers/admin/usuariosController');
+const { upload } = require('../controllers/admin/usuariosController');  // Middleware de multer
+const adminController = require('../controllers/admin/dashboardController');
 
-// Actualizar una cancha por ID
-router.put('/canchas/:id', checkAdminRole, adminController.updateCancha);
+// Rutas de canchas
+router.post('/canchas', createCancha);               // Crear cancha
+router.get('/canchas', getCanchas);                 // Obtener canchas
+router.put('/canchas/:id', updateCancha);           // Actualizar cancha por ID
+router.delete('/canchas/:id', deleteCancha);        // Eliminar cancha por ID
 
-// Eliminar una cancha por ID
-router.delete('/canchas/:id', checkAdminRole, adminController.deleteCancha);
+// Rutas de clientes
+router.post('/clientes', createCliente);            // Crear cliente
+router.get('/clientes', getAllClientes);            // Obtener todos los clientes
+router.get('/clientes/:id/imagen', getClienteImagen); // Obtener imagen de un cliente por ID
+router.put('/clientes/:id', updateCliente);         // Actualizar cliente por ID
+router.delete('/clientes/:id', deleteCliente);      // Eliminar cliente por ID
 
-// ======================== Rutas para Clientes ========================
+// Rutas de preguntas
+router.post('/preguntas', createPregunta);         // Crear pregunta
+router.get('/preguntas', getPreguntas);             // Obtener todas las preguntas
+router.delete('/preguntas/:id', deletePregunta);   // Eliminar pregunta por ID
 
-// Crear cliente con imagen en binario
-router.post('/clientes', checkAdminRole, adminController.upload.single('imagen'), adminController.createCliente);
+// Rutas de reservas
+router.get('/reservas', getReservas);               // Obtener todas las reservas
+router.get('/reservas/:id', getReservaById);        // Obtener una reserva por ID
+router.put('/reservas/:id', updateReserva);         // Actualizar una reserva por ID
+router.delete('/reservas/:id', deleteReserva);      // Eliminar reserva por ID
 
-// Obtener imagen de cliente por ID
-router.get('/clientes/:id/imagen', checkAdminRole, adminController.getClienteImagen);
+// Rutas de usuarios
+router.post('/usuarios', upload.single('foto'), userController.createUser);  // Crear un nuevo usuario con foto
+router.get('/usuarios', userController.getAllUsers);  // Obtener todos los usuarios
+router.get('/usuarios/:id', userController.getUserById);  // Obtener un usuario por ID
+router.put('/usuarios/:id', upload.single('foto'), userController.updateUser);  // Actualizar un usuario con foto
+router.delete('/usuarios/:id', userController.deleteUser);  // Eliminar un usuario por ID
 
-// Actualizar cliente con imagen en binario
-router.put('/clientes/:id', checkAdminRole, adminController.upload.single('imagen'), adminController.updateCliente);
+// Obtener datos del dashboard
+router.get('/dashboard', adminController.getDashboardData);
 
-// Eliminar cliente por ID
-router.delete('/clientes/:id', checkAdminRole, adminController.deleteCliente);
+// Obtener las canchas más reservadas
+router.get('/top-canchas', adminController.getTopCanchasReservadas);
 
-// ======================== Rutas para Preguntas ========================
+// Obtener los clientes más activos
+router.get('/top-clientes', adminController.getTopClientesActivos);
 
-// Crear una pregunta
-router.post('/preguntas', adminController.createPregunta);
-
-// Obtener todas las preguntas
-router.get('/preguntas', adminController.getPreguntas);
-
-// Eliminar una pregunta por ID
-router.delete('/preguntas/:id', checkAdminRole, adminController.deletePregunta);
-
-// ======================== Rutas para Reservas ========================
-
-// Crear una reserva
-router.post('/reservas', adminController.createReserva);
-
-// Obtener todas las reservas
-router.get('/reservas', adminController.getReservas);
-
-// Actualizar una reserva por ID
-router.put('/reservas/:id', checkAdminRole, adminController.updateReserva);
-
-// Eliminar una reserva por ID
-router.delete('/reservas/:id', checkAdminRole, adminController.deleteReserva);
-
-// ======================== Rutas para Usuarios ========================
-
-// Crear usuario con imagen en binario
-router.post('/usuarios', checkAdminRole, adminController.upload.single('foto'), adminController.createUsuario);
-
-// Actualizar usuario con imagen en binario
-router.put('/usuarios/:id', checkAdminRole, adminController.upload.single('foto'), adminController.updateUsuario);
-
-// Eliminar usuario por ID
-router.delete('/usuarios/:id', checkAdminRole, adminController.deleteUsuario);
 
 module.exports = router;
+
