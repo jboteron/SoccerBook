@@ -1,29 +1,31 @@
 <template>
-  <div>
-    <h1>Gestión de Clientes</h1>
+  <div class="client-management">
+    <h1 class="title">{{ isEditing ? 'Editar Cliente' : 'Gestión de Clientes' }}</h1>
 
     <!-- Formulario para crear o actualizar cliente -->
-    <form @submit.prevent="handleSubmit">
-      <input type="text" v-model="cliente.nombre" placeholder="Nombre" required />
-      <input type="text" v-model="cliente.direccion" placeholder="Dirección" required />
-      <input type="text" v-model="cliente.telefono" placeholder="Teléfono" required />
-      <input type="email" v-model="cliente.correo" placeholder="Correo" required />
-      <input type="file" @change="onFileChange" />
-      <button type="submit">{{ isEditing ? 'Actualizar' : 'Crear' }} Cliente</button>
+    <form @submit.prevent="handleSubmit" class="client-form">
+      <input type="text" v-model="cliente.nombre" placeholder="Nombre" required class="form-input" />
+      <input type="text" v-model="cliente.direccion" placeholder="Dirección" required class="form-input" />
+      <input type="text" v-model="cliente.telefono" placeholder="Teléfono" required class="form-input" />
+      <input type="email" v-model="cliente.correo" placeholder="Correo" required class="form-input" />
+      <input type="file" @change="onFileChange" class="file-input" />
+      <button type="submit" class="submit-btn">{{ isEditing ? 'Actualizar' : 'Crear' }} Cliente</button>
     </form>
 
-    <div v-if="clientes.length">
-      <h2>Clientes</h2>
-      <ul>
-        <li v-for="cliente in clientes" :key="cliente.id">
-          <div>
-            <p><strong>{{ cliente.nombre }}</strong></p>
+    <div v-if="clientes.length" class="client-list">
+      <h2 class="list-title">Clientes</h2>
+      <ul class="list">
+        <li v-for="cliente in clientes" :key="cliente.id" class="client-item">
+          <div class="client-info">
+            <p class="client-name"><strong>{{ cliente.nombre }}</strong></p>
             <p>{{ cliente.direccion }}</p>
             <p>{{ cliente.telefono }}</p>
             <p>{{ cliente.correo }}</p>
-            <img v-if="cliente.imagenUrl" :src="cliente.imagenUrl" alt="Imagen del Cliente" width="100" height="100" />
-            <button @click="editCliente(cliente)">Editar</button>
-            <button @click="deleteCliente(cliente.id)">Eliminar</button>
+            <img v-if="cliente.imagenUrl" :src="cliente.imagenUrl" alt="Imagen del Cliente" class="client-image" />
+            <div class="action-buttons">
+              <button @click="editCliente(cliente)" class="edit-btn">Editar</button>
+              <button @click="deleteCliente(cliente.id)" class="delete-btn">Eliminar</button>
+            </div>
           </div>
         </li>
       </ul>
@@ -164,34 +166,135 @@ export default {
 };
 </script>
 
-
 <style scoped>
-/* Estilos para el formulario y la lista de clientes */
-form {
+/* Contenedor principal de la gestión de clientes */
+.client-management {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Título principal */
+.title {
+  text-align: center;
+  color: #42b983;
+  font-size: 2rem;
   margin-bottom: 20px;
 }
 
-input {
-  margin: 5px;
+/* Estilo del formulario */
+.client-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
-button {
-  margin: 5px;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  margin: 10px 0;
-  border: 1px solid #ccc;
+.form-input,
+.file-input {
   padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
 }
 
-img {
+.form-input:focus,
+.file-input:focus {
+  border-color: #42b983;
+}
+
+.submit-btn {
+  padding: 10px;
+  background-color: #42b983;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #3d668f;
+}
+
+/* Estilos para la lista de clientes */
+.client-list {
+  margin-top: 30px;
+}
+
+.list-title {
+  font-size: 1.5rem;
+  color: #3d668f;
+  margin-bottom: 20px;
+}
+
+.list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.client-item {
+  background-color: #f1f1f1;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.client-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.client-name {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.client-image {
   border-radius: 50%;
   margin-top: 10px;
+  width: 100px;
+  height: 100px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-btn,
+.delete-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.edit-btn {
+  background-color: #f39c12;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #e67e22;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
 }
 </style>

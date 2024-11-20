@@ -1,7 +1,7 @@
 <template>
-  <div v-if="userRole === 'admin'">
+  <div v-if="userRole === 'admin'" class="admin-dashboard">
     <div class="dashboard">
-      <h1>Dashboard del Administrador</h1>
+      <h1 class="dashboard-title">Administrador</h1>
       <div class="stats">
         <div v-if="dashboardData" class="stat">
           <p>Total de Canchas: {{ dashboardData.totalCanchas }}</p>
@@ -30,10 +30,8 @@
       </div>
     </div>
 
-    <!-- Botón para abrir/cerrar la barra de navegación -->
     <button class="toggle-button" @click="toggleSidebar">☰</button>
 
-    <!-- Barra de navegación desplegable -->
     <div class="sidebar" :class="{ open: isOpen }">
       <NavigationButton
         v-for="section in sections"
@@ -43,34 +41,31 @@
         :active="currentSection === section.name"
         @changeSection="currentSection = $event"
       />
-      <!-- Botón de cerrar sesión -->
       <button class="logout-btn" @click="logout">Cerrar sesión</button>
     </div>
 
-    <!-- Renderizar sección correspondiente -->
-    <div v-if="currentSection === 'canchas'">
+    <div v-if="currentSection === 'canchas'" class="section-content">
       <h2>Gestionar Canchas</h2>
       <CanchaList @fetchData="fetchData" />
     </div>
-    <div v-if="currentSection === 'clientes'">
+    <div v-if="currentSection === 'clientes'" class="section-content">
       <h2>Gestionar Clientes</h2>
       <ClienteList @fetchData="fetchData" />
     </div>
-    <div v-if="currentSection === 'preguntas'">
+    <div v-if="currentSection === 'preguntas'" class="section-content">
       <h2>Gestionar Preguntas</h2>
       <PreguntaList @fetchData="fetchData" />
     </div>
-    <div v-if="currentSection === 'reservas'">
+    <div v-if="currentSection === 'reservas'" class="section-content">
       <h2>Gestionar Reservas</h2>
       <ReservaList @fetchData="fetchData" />
     </div>
-    <div v-if="currentSection === 'usuarios'">
+    <div v-if="currentSection === 'usuarios'" class="section-content">
       <h2>Gestionar Usuarios</h2>
       <UsuarioList @fetchData="fetchData" />
     </div>
   </div>
 
-  <!-- Mensaje si el usuario no tiene acceso -->
   <div v-else>
     <p>No tienes acceso a esta página.</p>
   </div>
@@ -91,8 +86,8 @@ export default {
       dashboardData: null,
       topCanchas: [],
       topClientes: [],
-      currentSection: "canchas", // Sección inicial
-      isOpen: false, // Controla si la barra de navegación está abierta o cerrada
+      currentSection: "canchas",
+      isOpen: false,
       sections: [
         { name: "canchas", label: "Gestionar Canchas" },
         { name: "clientes", label: "Gestionar Clientes" },
@@ -109,7 +104,7 @@ export default {
   },
   computed: {
     userRole() {
-      return this.$store.getters.userRole; // Obtener el rol desde Vuex
+      return this.$store.getters.userRole;
     },
   },
   methods: {
@@ -148,7 +143,7 @@ export default {
       this.$router.push("/login");
     },
     toggleSidebar() {
-      this.isOpen = !this.isOpen; // Cambia entre abierto y cerrado
+      this.isOpen = !this.isOpen;
     },
   },
   components: {
@@ -163,37 +158,55 @@ export default {
 </script>
 
 <style scoped>
-.dashboard {
-  text-align: center;
+/* Estilos generales */
+.admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7fa;
   padding: 20px;
 }
+
+.dashboard {
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.dashboard-title {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #42b983;
+  margin-bottom: 20px;
+}
+
 .stats, .top-data {
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
-nav {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+
+h2 {
+  font-size: 1.5rem;
+  color: #3d668f;
+  margin-bottom: 10px;
 }
-button {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  transition: background-color 0.3s;
+
+ul {
+  list-style-type: none;
+  padding-left: 0;
 }
-button.active {
-  background-color: #3d668f;
+
+li {
+  background-color: #f1f1f1;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 6px;
 }
-button:hover {
-  background-color: #e67e22;
-}
-.logout-btn {
-  background-color: red;
-}
+
+/* Barra de navegación */
 .toggle-button {
   position: fixed;
   top: 1rem;
@@ -201,49 +214,93 @@ button:hover {
   background-color: #42b983;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  font-size: 1.2rem;
+  padding: 1rem;
+  font-size: 1.5rem;
   cursor: pointer;
   border-radius: 4px;
   z-index: 1000;
   transition: background-color 0.3s;
 }
+
 .toggle-button:hover {
   background-color: #3d668f;
 }
+
 .sidebar {
   position: fixed;
   top: 0;
-  left: 0;
-  height: 100%;
+  left: -250px;
   width: 250px;
+  height: 100%;
   background-color: #333;
   color: white;
-  padding: 1rem;
-  transform: translateX(-100%);
+  padding: 20px;
   transition: transform 0.3s ease-in-out;
   z-index: 999;
 }
+
 .sidebar.open {
-  transform: translateX(0); /* Muestra la barra */
+  transform: translateX(250px);
 }
+
 .sidebar button {
   display: block;
+  width: 100%;
   margin: 1rem 0;
+  padding: 1rem;
   background-color: transparent;
   color: white;
   text-align: left;
   font-size: 1rem;
   border: none;
   cursor: pointer;
-  padding: 0.5rem;
   border-radius: 4px;
   transition: background-color 0.3s;
 }
+
 .sidebar button.active {
   background-color: #42b983;
 }
+
 .sidebar button:hover {
   background-color: #3d668f;
+}
+
+.logout-btn {
+  background-color: red;
+  color: white;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+/* Contenido de las secciones */
+.section-content {
+  width: 100%;
+  padding: 20px;
+  margin-top: 50px;
+}
+
+.section-content h2 {
+  color: #3d668f;
+}
+
+/* Estilos de transición y sombras */
+button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  background-color: #42b983;
+  color: white;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+button:hover {
+  background-color: #3d668f;
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(1px);
 }
 </style>

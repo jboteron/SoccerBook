@@ -1,41 +1,46 @@
 <template>
-  <div class="preguntas">
-    <h2>Gestionar Preguntas</h2>
+  <div class="preguntas-container">
+    <h2 class="section-title">Gestionar Preguntas</h2>
 
     <!-- Formulario para Crear Pregunta -->
-    <div v-if="modoCreacion">
-      <h3>Crear Pregunta</h3>
-      <form @submit.prevent="crearPregunta">
-        <div>
-          <label for="nombre">Nombre:</label>
-          <input type="text" v-model="nuevaPregunta.nombre" required />
+    <div v-if="modoCreacion" class="form-container">
+      <h3 class="form-title">Crear Pregunta</h3>
+      <form @submit.prevent="crearPregunta" class="form">
+        <div class="form-group">
+          <label for="nombre" class="label">Nombre:</label>
+          <input type="text" v-model="nuevaPregunta.nombre" required class="input-field" />
         </div>
-        <div>
-          <label for="correo">Correo:</label>
-          <input type="email" v-model="nuevaPregunta.correo" required />
+        <div class="form-group">
+          <label for="correo" class="label">Correo:</label>
+          <input type="email" v-model="nuevaPregunta.correo" required class="input-field" />
         </div>
-        <div>
-          <label for="mensaje">Mensaje:</label>
-          <textarea v-model="nuevaPregunta.mensaje" required></textarea>
+        <div class="form-group">
+          <label for="mensaje" class="label">Mensaje:</label>
+          <textarea v-model="nuevaPregunta.mensaje" required class="textarea-field"></textarea>
         </div>
-        <button type="submit">Enviar Pregunta</button>
-        <button @click="cancelarCreacion">Cancelar</button>
+        <div class="form-actions">
+          <button type="submit" class="btn-submit">Enviar Pregunta</button>
+          <button type="button" @click="cancelarCreacion" class="btn-cancel">Cancelar</button>
+        </div>
       </form>
     </div>
 
     <!-- Lista de Preguntas -->
-    <div v-else>
-      <h3>Preguntas Recibidas</h3>
-      <ul>
-        <li v-for="pregunta in preguntas" :key="pregunta.id">
-          <div>
-            <strong>{{ pregunta.nombre }}</strong> - {{ pregunta.correo }}
-            <p>{{ pregunta.mensaje }}</p>
-            <button @click="eliminarPregunta(pregunta.id)">Eliminar</button>
+    <div v-else class="questions-list">
+      <h3 class="list-title">Preguntas Recibidas</h3>
+      <ul class="questions">
+        <li v-for="pregunta in preguntas" :key="pregunta.id" class="question-item">
+          <div class="question-info">
+            <strong class="question-name">{{ pregunta.nombre }}</strong> - 
+            <span class="question-email">{{ pregunta.correo }}</span>
+            <p class="question-message">{{ pregunta.mensaje }}</p>
+          </div>
+          <div class="action-buttons">
+            <button @click="eliminarPregunta(pregunta.id)" class="btn-delete">Eliminar</button>
           </div>
         </li>
       </ul>
-      <button @click="modoCreacion = true">Crear Pregunta</button>
+      <button @click="modoCreacion = true" class="btn-create">Crear Pregunta</button>
     </div>
   </div>
 </template>
@@ -101,49 +106,181 @@ export default {
 </script>
 
 <style scoped>
-.preguntas {
-  max-width: 800px;
+.preguntas-container {
+  max-width: 900px;
   margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-h3 {
-  margin-top: 20px;
+.section-title {
+  font-size: 2rem;
+  color: #42b983;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
-form div {
-  margin-bottom: 10px;
+/* Formulario */
+.form-container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-button {
-  padding: 5px 10px;
-  margin-top: 10px;
+.form-title {
+  font-size: 1.5rem;
+  color: #3d668f;
+  margin-bottom: 15px;
 }
 
-button[type="submit"] {
-  background-color: green;
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.label {
+  font-size: 1rem;
+  color: #333;
+}
+
+.input-field,
+.textarea-field {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.input-field:focus,
+.textarea-field:focus {
+  border-color: #42b983;
+}
+
+.textarea-field {
+  height: 120px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-submit,
+.btn-cancel {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-submit {
+  background-color: #42b983;
   color: white;
+  border: none;
 }
 
-button[type="button"] {
-  background-color: red;
+.btn-submit:hover {
+  background-color: #3d668f;
+}
+
+.btn-cancel {
+  background-color: #e74c3c;
   color: white;
+  border: none;
 }
 
-ul {
+.btn-cancel:hover {
+  background-color: #c0392b;
+}
+
+/* Lista de preguntas */
+.questions-list {
+  margin-top: 40px;
+}
+
+.list-title {
+  font-size: 1.5rem;
+  color: #3d668f;
+  margin-bottom: 15px;
+}
+
+.questions {
   list-style-type: none;
   padding: 0;
 }
 
-li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+.question-item {
+  background-color: #f1f1f1;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-textarea {
-  width: 100%;
-  height: 100px;
-  margin-top: 5px;
+.question-info {
+  font-size: 1rem;
+  color: #333;
+}
+
+.question-name {
+  font-weight: bold;
+}
+
+.question-email {
+  color: #42b983;
+}
+
+.question-message {
+  margin-top: 10px;
+  font-style: italic;
+  color: #666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-delete {
+  padding: 8px 12px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-delete:hover {
+  background-color: #c0392b;
+}
+
+.btn-create {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #42b983;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-create:hover {
+  background-color: #3d668f;
 }
 </style>
